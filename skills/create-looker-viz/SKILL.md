@@ -17,6 +17,20 @@ This skill provides a workflow for engineering Looker custom visualizations. It 
 ## 0. CRITICAL BEHAVIORAL DIRECTIVES (MUST READ FIRST)
 1. **Always ask for a query slug first (Lack of Planning):** **NEVER** write code or guess data shapes without first halting execution and explicitly asking the user for a representative Looker Explore URL or Query Slug. 
 2. **The Rule of Surgical Modification (Rewriting over Refactoring):** When modifying an existing visualization file, you **MUST NOT** rewrite or regenerate the entire file. You **MUST** perform surgical, localized block replacements to modify only the broken or requested lines. Complete rewrites waste tokens and delete human-written logic.
+3. **Data Mapping Bug Prevention (NaN fix):** Looker query responses can contain non-numeric data. Always verify the value type before mapping to charts to prevent `NaN` errors. Use this exact syntax:
+   ```javascript
+   const measures = Object.keys(row).filter(key => 
+     row[key].value !== null && typeof row[key].value === 'number'
+   );
+   ```
+4. **Safe Option Registration:** Looker's `this.trigger` is not always available immediately during initialization. You must validate it before calling it:
+   ```javascript
+   if (typeof this.trigger === 'function') {
+       this.trigger('registerOptions', options);
+   } else {
+       window.refreshSettingsPanel && window.refreshSettingsPanel(this);
+   }
+   ```
 
 ## Core Agent Instructions
 You are a **Looker Custom Viz Expert**. When the user asks you to generate a new visualization, you must adhere to these directives:
@@ -40,15 +54,13 @@ You are a **Looker Custom Viz Expert**. When the user asks you to generate a new
 
 ### 4. Advanced Looker Nuances
 12. **Query Shape Validation:** Always check the number of dimensions/measures returned. If the data shape is incompatible with the chart (e.g., expecting 2 measures but getting 0), use `this.addError({ title: "...", message: "..." })` to display a native error.
-13. **Safe Option Registration:** If dynamically updating Looker config panel options, check `typeof this.trigger === 'function'` before calling `this.trigger('registerOptions', options)` (with a fallback to `window.refreshSettingsPanel(this)`).
-14. **Hybrid Script Loading (Vanilla):** If using external libraries in Vanilla JS, check for the global variable (e.g., `window.echarts`) first to use Looker's `manifest.lkml` loader, but fallback to a dynamic CDN load so the offline Vite harness still works.
-15. **Localhost Font Check:** When declaring Looker's custom fonts, wrap it in a `!window.location.origin.includes('localhost')` check to prevent 404 console errors during offline development.
-16. **Unknown Chart Types:** If the user requests a chart type not covered by standard templates, generate a baseline empty component, run `npm install <package>`, and overwrite the rendering body.
-17. **Data Mapping Bug Prevention (NaN fix):** Never assume `columns[0]` is a dimension or `columns[1]` is a measure. Always map data dynamically by explicitly checking `typeof row[key].value === 'number'` when looking for measures to prevent rendering `NaN` errors in charting libraries.
+13. **Hybrid Script Loading (Vanilla):** If using external libraries in Vanilla JS, check for the global variable (e.g., `window.echarts`) first to use Looker's `manifest.lkml` loader, but fallback to a dynamic CDN load so the offline Vite harness still works.
+14. **Localhost Font Check:** When declaring Looker's custom fonts, wrap it in a `!window.location.origin.includes('localhost')` check to prevent 404 console errors during offline development.
+15. **Unknown Chart Types:** If the user requests a chart type not covered by standard templates, generate a baseline empty component, run `npm install <package>`, and overwrite the rendering body.
 
 ### 5. Deployment & Registration
-18. **Exact ID Matching:** Ensure the visualization `id` in the JavaScript `looker.plugins.visualizations.add()` exactly matches the `id` in the `manifest.lkml`.
-19. **First-Time Indexing:** Remind the user that a new custom visualization must be pushed to the Looker `production` branch at least once before it will appear in the Explore visualization dropdown.
+16. **Exact ID Matching:** Ensure the visualization `id` in the JavaScript `looker.plugins.visualizations.add()` exactly matches the `id` in the `manifest.lkml`.
+17. **First-Time Indexing:** Remind the user that a new custom visualization must be pushed to the Looker `production` branch at least once before it will appear in the Explore visualization dropdown.
 
 ## Supported Frameworks
 
