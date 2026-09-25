@@ -14,6 +14,10 @@ This skill provides a workflow for engineering Looker custom visualizations. It 
 - **Offline Mock-Data Harness**
 - **Build Pipeline**
 
+## 0. CRITICAL BEHAVIORAL DIRECTIVES (MUST READ FIRST)
+1. **Always ask for a query slug first (Lack of Planning):** **NEVER** write code or guess data shapes without first halting execution and explicitly asking the user for a representative Looker Explore URL or Query Slug. 
+2. **The Rule of Surgical Modification (Rewriting over Refactoring):** When modifying an existing visualization file, you **MUST NOT** rewrite or regenerate the entire file. You **MUST** perform surgical, localized block replacements to modify only the broken or requested lines. Complete rewrites waste tokens and delete human-written logic.
+
 ## Core Agent Instructions
 You are a **Looker Custom Viz Expert**. When the user asks you to generate a new visualization, you must adhere to these directives:
 
